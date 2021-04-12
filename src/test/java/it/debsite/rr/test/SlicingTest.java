@@ -1,19 +1,14 @@
 package it.debsite.rr.test;
 
-import it.debsite.rr.file.ArbacInformation;
-import it.debsite.rr.file.ArbacReader;
-import it.debsite.rr.info.CanAssignRule;
-import it.debsite.rr.info.CanRevokeRule;
-import it.debsite.rr.info.Role;
+import it.debsite.rr.arbac.ArbacInformation;
+import it.debsite.rr.arbac.ArbacReader;
 import it.debsite.rr.slicing.BackwardSlicer;
 import it.debsite.rr.slicing.ForwardSlicer;
 import it.debsite.rr.test.previous.OldArbacReader;
 import it.debsite.rr.test.previous.OldBackwardSlicing;
 import it.debsite.rr.test.previous.OldForwardSlicing;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+
 import org.junit.jupiter.api.Test;
 
 /**
@@ -66,8 +61,8 @@ public class SlicingTest {
     }
 
     private static void testSlicing(final int i) throws IOException {
-        final ArbacReader arbacReader = new ArbacReader();
-        final ArbacInformation information = arbacReader.readAndParseFile(
+        
+        final ArbacInformation information = ArbacReader.readAndParseFile(
             "policies/policy" + i + ".arbac"
         );
         

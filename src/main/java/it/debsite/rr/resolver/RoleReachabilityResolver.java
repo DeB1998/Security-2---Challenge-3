@@ -1,6 +1,6 @@
 package it.debsite.rr.resolver;
 
-import it.debsite.rr.file.ArbacInformation;
+import it.debsite.rr.arbac.ArbacInformation;
 import it.debsite.rr.info.CanAssignRule;
 import it.debsite.rr.info.CanRevokeRule;
 import it.debsite.rr.info.Role;

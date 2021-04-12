@@ -1,4 +1,4 @@
-package it.debsite.rr.file;
+package it.debsite.rr.arbac;
 
 import it.debsite.rr.info.CanAssignRule;
 import it.debsite.rr.info.CanRevokeRule;

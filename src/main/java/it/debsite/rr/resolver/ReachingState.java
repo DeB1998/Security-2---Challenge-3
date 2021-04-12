@@ -8,16 +8,19 @@ import lombok.Getter;
 import java.util.List;
 
 /**
- * Description.
+ * Class that models a reachable state in the role reachability problem..
  *
  * @author DeB
  * @version 1.0 2021-04-11
- * @since version date
+ * @since 1.0 2021-04-11
  */
 @AllArgsConstructor
 @Getter
 @EqualsAndHashCode
-public class ReachingState {
+class ReachingState {
     
+    /**
+     * List of the <i>user-to-roles</i> assignment inside the state.
+     */
     private final List<UserToRolesAssignment> assignments;
 }

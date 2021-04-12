@@ -1,4 +1,4 @@
-package it.debsite.rr.file;
+package it.debsite.rr.arbac;
 
 import it.debsite.rr.info.CanAssignRule;
 import it.debsite.rr.info.CanRevokeRule;
@@ -24,15 +24,16 @@ import org.jetbrains.annotations.Nullable;
  * Class that allows for reading and parsing a {@code .arbac} file.
  *
  * @author Alessio De Biasi
- * @version 1.0 2021-04-11
+ * @version 1.1 2021-04-12
  * @since 1.0 2021-04-11
  */
-public class ArbacReader {
+@SuppressWarnings("ObjectAllocationInLoop")
+public final class ArbacReader {
 
     /**
      * Pattern of the content of {@code .arbac} files.
      */
-    @SuppressWarnings("ConstantExpression")
+    @SuppressWarnings({ "ConstantExpression", "DuplicateStringLiteralInspection" })
     private static final Pattern FILE_CONTENT_PATTERN = Pattern.compile(
         "^Roles (?<roles>[^;]+);Users (?<users>[^;]+);UA (?<ua>[^;]+);CR (?<cr>[^;]+);CA " +
         "(?<ca>[^;]+);Goal (?<goal>[^;]+);.*"
@@ -70,6 +71,11 @@ public class ArbacReader {
     private static final Function<String, User> USER_CREATOR = User::new;
 
     /**
+     * Constructor that prevents this class from being instantiated.
+     */
+    private ArbacReader() {}
+
+    /**
      * Reads and parses a {@code .arbac} file. The file charset must be UTF-8. It also assumes
      * that:
      * <ul>
@@ -86,7 +92,8 @@ public class ArbacReader {
      * @throws IOException If some I/O errors occur.
      */
     @NotNull
-    public ArbacInformation readAndParseFile(@NotNull final String filePath) throws IOException {
+    public static ArbacInformation readAndParseFile(@NotNull final String filePath)
+        throws IOException {
         // Open the file
         try (final Scanner reader = new Scanner(new File(filePath), StandardCharsets.UTF_8)) {
             // Clear the read content
@@ -103,7 +110,7 @@ public class ArbacReader {
     /**
      * Parses the content of the file and extracts the information.
      *
-     * @param filePath Path of the read file.
+     * @param filePath Path of the read file. It is used to generate error messages.
      * @param fileContent String that holds the content of the file as a single-row string.
      * @return The information parsed from the specified file content.
      */
@@ -118,18 +125,22 @@ public class ArbacReader {
         // CHeck if the file content is well-formed
         if (matcher.matches()) {
             // Extract the roles
+            //noinspection DuplicateStringLiteralInspection
             final Set<Role> roles = ArbacReader.extractSpaceSeparatedInformation(
                 matcher.group("roles"),
                 ArbacReader.ROLE_CREATOR
             );
             // Extract the users
+            //noinspection DuplicateStringLiteralInspection
             final Set<User> users = ArbacReader.extractSpaceSeparatedInformation(
                 matcher.group("users"),
                 ArbacReader.USER_CREATOR
             );
 
             // Extract the user-to-roles assignments
-            final List<UserToRolesAssignment> userToRolesAssignments = ArbacReader.extractUserToRolesAssignments(
+            //noinspection LocalVariableNamingConvention
+            final List<UserToRolesAssignment> userToRolesAssignments =
+                    ArbacReader.extractUserToRolesAssignments(
                 filePath,
                 matcher.group("ua")
             );
@@ -190,12 +201,16 @@ public class ArbacReader {
 
         return result;
     }
-    
+
     /**
+     * Parses and extracts the information from a string containing all the <i>user-to-role</i>
+     * assignments.
      *
-     * @param filePath
-     * @param uaAssignmentsString
-     * @return
+     * @param filePath Path of the read file. It is used to generate error messages.
+     * @param uaAssignmentsString String containing all the <i>user-to-role</i>
+     *         assignments.
+     * @return The list of <i>user-to-roles</i> assignments extracted and condensed from the
+     *         specified string.
      */
     @NotNull
     private static List<UserToRolesAssignment> extractUserToRolesAssignments(
@@ -255,6 +270,17 @@ public class ArbacReader {
         return result;
     }
 
+    /**
+     * Parses and extracts the information from a string containing all the <i>can-assign</i>
+     * rules.
+     *
+     * @param filePath Path of the read file. It is used to generate error messages.
+     * @param canAssignRulesString String containing all the <i>user-to-role</i>
+     *         assignments.
+     * @return The list of <i>user-to-roles</i> assignments extracted and condensed from the
+     *         specified string.
+     */
+    @SuppressWarnings({ "DuplicateStringLiteralInspection", "OverlyNestedMethod" })
     @NotNull
     private static List<CanAssignRule> extractCanAssignRules(
         @NotNull final String filePath,
@@ -263,30 +289,36 @@ public class ArbacReader {
         // Clear the result
         final List<CanAssignRule> result = new ArrayList<>();
 
+        // Divide each can-assign rule
         for (final String canAssign : canAssignRulesString.split(">")) {
             final String ruleString = canAssign.trim();
+            // Skip empty strings
             if (!ruleString.isEmpty()) {
+                // Extract all the components inside a can-assign rule
                 final Matcher matcher = ArbacReader.CAN_ASSIGN_RULE_PATTERN.matcher(ruleString);
                 if (matcher.matches()) {
                     // Create the basic information
                     final Role admin = new Role(matcher.group("admin").trim());
                     final Role assign = new Role(matcher.group("target").trim());
                     final Set<Role> preconditions = new HashSet<>();
+                    //noinspection LocalVariableNamingConvention
                     final Set<Role> negativePreconditions = new HashSet<>();
 
                     // Extract the conditions
                     @NonNls
                     final String conditions = matcher.group("conditions").trim();
                     // Skip TRUE conditions
-                    if (!conditions.equals("TRUE")) {
+                    if (!"TRUE".equals(conditions)) {
                         // Loop over all conditions
                         for (final String splitCondition : conditions.split("&")) {
                             // Trim the string
                             final String trimmedCondition = splitCondition.trim();
-                            // CHeck if the condition is a precondition or a negative one
+                            // Check if the condition is a precondition or a negative one
                             if (trimmedCondition.startsWith("-")) {
+                                // Add a negative precondition
                                 negativePreconditions.add(new Role(trimmedCondition.substring(1)));
                             } else {
+                                // Add a positive precondition
                                 preconditions.add(new Role(trimmedCondition));
                             }
                         }
@@ -307,6 +339,15 @@ public class ArbacReader {
         return result;
     }
 
+    /**
+     * Parses and extracts the information from a string containing all the <i>can-revoke</i>
+     * rules.
+     *
+     * @param filePath Path of the read file. It is used to generate error messages.
+     * @param canRevokeRulesString String containing all the <i>can-revoke</i> rules.
+     * @return The list of <i>can-revoke</i> rules extracted from the specified string.
+     */
+    @SuppressWarnings("DuplicateStringLiteralInspection")
     @NotNull
     private static List<CanRevokeRule> extractCanRevokeRules(
         @NotNull final String filePath,
@@ -318,6 +359,7 @@ public class ArbacReader {
         // Divide each can-revoke rule
         for (final String canRevokeRuleString : canRevokeRulesString.split(">")) {
             final String ruleString = canRevokeRuleString.trim();
+            // Skip empty strings
             if (!ruleString.isEmpty()) {
                 // Extract the administrative and target roles
                 final Matcher matcher = ArbacReader.CAN_REVOKE_RULE_PATTERN.matcher(ruleString);

@@ -1,7 +1,7 @@
 package it.debsite.rr.test;
 
-import it.debsite.rr.file.ArbacInformation;
-import it.debsite.rr.file.ArbacReader;
+import it.debsite.rr.arbac.ArbacInformation;
+import it.debsite.rr.arbac.ArbacReader;
 import it.debsite.rr.test.previous.OldArbacReader;
 
 import java.io.IOException;
@@ -22,9 +22,9 @@ public class ArbacReaderTest {
     public void testReader() throws IOException {
         for (int i = 1; i <= 8; i++) {
             final OldArbacReader oldArbacReader = new OldArbacReader();
-            final ArbacReader arbacReader = new ArbacReader();
+            
             oldArbacReader.readFile("policies/policy" + i + ".arbac");
-            final ArbacInformation information = arbacReader.readAndParseFile(
+            final ArbacInformation information = ArbacReader.readAndParseFile(
                 "policies/policy" + i + ".arbac"
             );
 

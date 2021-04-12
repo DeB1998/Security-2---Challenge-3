@@ -1,7 +1,7 @@
 package it.debsite.rr.test;
 
-import it.debsite.rr.file.ArbacInformation;
-import it.debsite.rr.file.ArbacReader;
+import it.debsite.rr.arbac.ArbacInformation;
+import it.debsite.rr.arbac.ArbacReader;
 import it.debsite.rr.resolver.RoleReachabilityResolver;
 import it.debsite.rr.slicing.BackwardSlicer;
 import it.debsite.rr.slicing.ForwardSlicer;
@@ -11,7 +11,6 @@ import it.debsite.rr.test.previous.OldForwardSlicing;
 import it.debsite.rr.test.previous.OldGraphNode;
 import it.debsite.rr.test.previous.OldReaching;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -39,8 +38,8 @@ public class ReachingTest {
     
     private static void checkReachability(final int i) throws IOException {
     
-        final ArbacReader arbacReader = new ArbacReader();
-        final ArbacInformation information = arbacReader.readAndParseFile(
+       
+        final ArbacInformation information = ArbacReader.readAndParseFile(
                 "policies/policy" + i + ".arbac"
         );
         boolean toContinue;

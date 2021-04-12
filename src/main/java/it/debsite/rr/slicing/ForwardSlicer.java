@@ -1,50 +1,63 @@
 package it.debsite.rr.slicing;
 
-import it.debsite.rr.file.ArbacInformation;
+import it.debsite.rr.arbac.ArbacInformation;
 import it.debsite.rr.info.CanAssignRule;
 import it.debsite.rr.info.CanRevokeRule;
 import it.debsite.rr.info.Role;
 import it.debsite.rr.info.UserToRolesAssignment;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import org.jetbrains.annotations.NotNull;
 
 /**
- * Description.
+ * Class that implements the forward slicing algorithm.
  *
- * @author DeB
- * @version 1.0 2021-04-11
- * @since version date
+ * @author Alessio De Biasi
+ * @version 1.1 2021-04-12
+ * @since 1.0 2021-04-11
  */
-public class ForwardSlicer {
+public final class ForwardSlicer {
 
     /**
-     * Applies the forward slicing algorithm to reduce the state space.
-     * @param information Information to appy the forward slicing algorithm to.
-     * @return
+     * Constructor that prevents this class from being instantiated.
      */
-    public static boolean applyForwardSlicing(final ArbacInformation information) {
-        final List<UserToRolesAssignment> userToRoleAssignments = information.getUserToRoleAssignments();
+    private ForwardSlicer() {}
+
+    /**
+     * Applies the forward slicing algorithm on the given ARBAC information, changing such
+     * information.
+     *
+     * @param information ARBAC information to reduce by applying the forward slicing
+     *         algorithm.
+     * @return @{@code true} if the algorithm changed the information, {@code false} otherwise.
+     */
+    @SuppressWarnings({ "BooleanMethodNameMustStartWithQuestion", "FeatureEnvy" })
+    public static boolean applyForwardSlicing(@NotNull final ArbacInformation information) {
+        // Extract the single information
+        //noinspection LocalVariableNamingConvention
+        final List<UserToRolesAssignment> userToRoleAssignments =
+                information.getUserToRoleAssignments();
         final List<CanAssignRule> canAssignRules = information.getCanAssignRules();
         final List<CanRevokeRule> canRevokeRules = information.getCanRevokeRules();
         final Set<Role> roles = information.getRoles();
 
-        // Compute the fixpoint
+        // Compute the fixpoint S*
         final Set<Role> fixpoint = ForwardSlicer.computeFixpoint(
             userToRoleAssignments,
             canAssignRules,
             roles
         );
 
-        // Compute R \ S
+        // Compute R \ S*
         final Set<Role> rMinusS = new HashSet<>(roles);
         rMinusS.removeAll(fixpoint);
-        // Delete the R \ S roles, i.e., compute R \ (R \ S)
+        // Delete the R \ S* roles, i.e., compute R \ (R \ S*)
         boolean changed = roles.retainAll(fixpoint);
 
-        // remove from CA:
-        // - all the rules that include any role in R \ S* in:
+        // remove from CA all the rules that include any role in R \ S* in:
         //     - the positive preconditions
         //     - in the target
         final Iterator<CanAssignRule> iterator = canAssignRules.iterator();
@@ -62,45 +75,71 @@ public class ForwardSlicer {
                 iterator.remove();
                 changed = true;
             } else {
-                // remove the roles R \ S* from the negative preconditions of all rules
+                // Remove the roles R \ S* from the negative preconditions of all rules
+                //noinspection ObjectAllocationInLoop
                 changed |= rule.getNegativePreconditions().removeIf(rMinusS::contains);
             }
         }
 
-        // remove from CR all the rules that mention any role in R \ S*
-        changed |= canRevokeRules.removeIf(role -> rMinusS.contains(role.getRoleToRevoke()));
+        // Remove from CR all the rules that mention any role in R \ S*
+        changed |=
+            canRevokeRules.removeIf(
+                role ->
+                    rMinusS.contains(role.getRoleToRevoke()) ||
+                    rMinusS.contains(role.getAdministrativeRole())
+            );
 
         return changed;
     }
 
+    /**
+     * Computes the fixpoint of the forward slicing algorithm over the provided information.
+     *
+     * @param userToRoleAssignments List of <i>user-to-roles</i> assignments.
+     * @param canAssignRules List of <i>can-assign</i> rules.
+     * @param roles Set of roles.
+     * @return The set S* of roles computed by the fixpoint algorithm.
+     */
+    @SuppressWarnings({ "MethodParameterNamingConvention", "FeatureEnvy" })
+    @NotNull
     private static Set<Role> computeFixpoint(
-        final List<? extends UserToRolesAssignment> userToRoleAssignments,
-        final List<CanAssignRule> canAssignRules,
-        final Set<Role> roles
+        @NotNull final Iterable<? extends UserToRolesAssignment> userToRoleAssignments,
+        final @NotNull Iterable<? extends CanAssignRule> canAssignRules,
+        final @NotNull Iterable<? extends Role> roles
     ) {
+        // Start with the initially assigned roles
         final Set<Role> previous = new HashSet<>();
         for (final UserToRolesAssignment u : userToRoleAssignments) {
             previous.addAll(u.getRoles());
         }
-        final Set<Role> newRoles = new HashSet<>();
-        
+        // Initialize the new roles state S_i
+        final Collection<Role> newRoles = new HashSet<>();
+
         do {
+            // Create the S_i set as an empty set
             newRoles.clear();
-    
+
+            // Loop over the possible roles
             for (final Role role : roles) {
-                // {rt ∈ R | (ra, Rp, Rn,rt) ∈ CA ∧ Rp ∪ {ra} ⊆ Si−1}
+                // Loop over the can assign rules
                 for (final CanAssignRule value : canAssignRules) {
-                    if (value.getRoleToAssign().equals(role) &&
-                            previous.containsAll(value.getPreconditions()) &&
-                            previous.contains(value.getAdministrativeRole())) {
+                    // Check if the previous state S_{i-1} contains the preconditions and the
+                    // administrative role mentioned in the rule and check the rule assigns the
+                    // role r_t
+                    if (
+                        value.getRoleToAssign().equals(role) &&
+                        previous.containsAll(value.getPreconditions()) &&
+                        previous.contains(value.getAdministrativeRole())
+                    ) {
+                        // Add the role to S_i
                         newRoles.add(role);
                         break;
                     }
                 }
             }
-    
-        }while (previous.addAll(newRoles));
-        
+        } while (previous.addAll(newRoles));
+
+        // Return the fixpoint S*
         return previous;
     }
 }
