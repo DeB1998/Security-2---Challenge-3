@@ -1,4 +1,4 @@
-package it.debsite.rr;
+package it.debsite.rr.test.previous;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -14,11 +14,11 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 @EqualsAndHashCode
-public class CanRevokeRule {
+public class OldCanRevokeRule {
 
-    private final Role administrativeRole;
+    private final OldRole administrativeRole;
     
-    private final Role roleToRevoke;
+    private final OldRole roleToRevoke;
     
     @Override
     public String toString() {

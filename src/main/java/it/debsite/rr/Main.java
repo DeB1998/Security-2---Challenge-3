@@ -35,8 +35,8 @@ public class Main {
          */
 
         long tot = 0;
-        for (int i = 1; i <= 8; i++) {
-            //int i = 1;
+        //for (int i = 1; i <= 8; i++) {
+            int i = 8;
             final long nano = System.nanoTime();
             final ArbacReader arbacReader = new ArbacReader();
             arbacReader.readFile("policies/policy" + i + ".arbac");
@@ -46,7 +46,9 @@ public class Main {
             final List<UserToRoleAssignment> userToRoleAssignments = arbacReader.getUserToRoleAssignments();
             final List<CanAssignRule> canAssignRules = arbacReader.getCanAssignRules();
             final List<CanRevokeRule> canRevokeRules = arbacReader.getCanRevokeRules();
-
+            
+           // print(arbacReader);
+            
             boolean toContinue;
             do {
                 toContinue =
@@ -75,7 +77,7 @@ public class Main {
                     arbacReader.getGoalRole()
             ));
             tot += (System.nanoTime() - nano);
-        }
+        //}
         System.out.println("TOT: " + tot);
         System.out.println("sdsdsdsd");
     }
@@ -232,4 +234,6 @@ public class Main {
 
         return changed;
     }
+    
+    
 }

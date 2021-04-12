@@ -1,4 +1,4 @@
-package it.debsite.rr;
+package it.debsite.rr.test.previous;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -17,13 +17,13 @@ import java.util.Set;
 @AllArgsConstructor
 @Getter
 @EqualsAndHashCode
-public class UserToRoleAssignment {
+public class OldUserToRoleAssignment {
     
-    private final User user;
+    private final OldUser user;
     
-    private final Set<Role> roles;
+    private final Set<OldRole> roles;
     
-    public UserToRoleAssignment(UserToRoleAssignment otherAssignment) {
+    public OldUserToRoleAssignment(OldUserToRoleAssignment otherAssignment) {
         
         this.user = otherAssignment.user;
         this.roles = new HashSet<>(otherAssignment.roles);

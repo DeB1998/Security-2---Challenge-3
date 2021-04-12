@@ -1,9 +1,10 @@
-package it.debsite.rr;
+package it.debsite.rr.test.previous;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -14,17 +15,17 @@ import java.util.Set;
  * @since version date
  */
 @AllArgsConstructor
-@Getter
 @EqualsAndHashCode
-public class CanAssignRule {
+@Getter
+public class OldCanAssignRule {
 
-    private final Role administrativeRole;
+    private final OldRole administrativeRole;
     
-    private final Set<Role> preconditions;
+    private final Set<OldRole> preconditions;
     
-    private final Set<Role> negativePreconditions;
+    private final Set<OldRole> negativePreconditions;
     
-    private final Role roleToAssign;
+    private final OldRole roleToAssign;
     
     @Override
     public String toString() {
