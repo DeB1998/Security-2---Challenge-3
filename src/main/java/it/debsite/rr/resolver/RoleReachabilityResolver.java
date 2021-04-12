@@ -14,7 +14,7 @@ import java.util.Set;
 /**
  * Description.
  *
- * @author DeB
+ * @author Alessio De Biasi
  * @version 1.0 2021-04-12
  * @since version date
  */
