@@ -2,6 +2,8 @@
 
 De Biasi Alessio - matriculation number 870288
 
+This program is written in Java and uses the build tools Gradle.
+
 ### Explanation
 
 The program solves the role reachabilty problem, where the problem information are included inside a
