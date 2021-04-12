@@ -12,11 +12,11 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Description.
+ * Class that solves the role-reachability problem.
  *
  * @author Alessio De Biasi
- * @version 1.0 2021-04-12
- * @since version date
+ * @version 1.1 2021-04-12
+ * @since 1.1 2021-04-12
  */
 public class RoleReachabilityResolver {
 
@@ -39,19 +39,24 @@ public class RoleReachabilityResolver {
         final List<? extends CanRevokeRule> canRevokeRules,
         final Role goalRole
     ) {
+        // Check if the current state has already been analyzed
         if (exploredNodes.contains(nodeToExplore)) {
             return false;
         }
+        // Check if the goal role is reached
         for (final UserToRolesAssignment assignment : nodeToExplore.getAssignments()) {
             if (assignment.getRoles().contains(goalRole)) {
                 return true;
             }
         }
+        // Add this state to the explored states
         exploredNodes.add(nodeToExplore);
 
-        // USER -> {r1, r2, r3}
+        // Loop over all the user-to-roles assignments to find any administrative role
         for (final UserToRolesAssignment assignment : nodeToExplore.getAssignments()) {
+            // Loop over the can-assign rules
             for (final CanAssignRule rule : canAssignRules) {
+                // Check if there is a user with the administrative role
                 if (assignment.getRoles().contains(rule.getAdministrativeRole())) {
                     int i = 0;
                     for (final UserToRolesAssignment otherAssignments : nodeToExplore.getAssignments()) {
