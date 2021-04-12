@@ -2,29 +2,34 @@ package it.debsite.rr;
 
 import it.debsite.rr.arbac.ArbacInformation;
 import it.debsite.rr.arbac.ArbacReader;
-import it.debsite.rr.info.CanAssignRule;
-import it.debsite.rr.info.CanRevokeRule;
-import it.debsite.rr.info.Role;
-import it.debsite.rr.info.User;
-import it.debsite.rr.info.UserToRolesAssignment;
 import it.debsite.rr.resolver.RoleReachabilityResolver;
 import it.debsite.rr.slicing.BackwardSlicer;
 import it.debsite.rr.slicing.ForwardSlicer;
 import java.io.IOException;
-import java.util.List;
-import java.util.Set;
 
 /**
- * Description.
+ * Main class that applies pruning and solves the role reachability problem for all the policies.
  *
- * @author DeB
- * @version 1.0 2021-04-11
- * @since version date
+ * @author Alessio De Biasi
+ * @version 1.1 2021-04-12
+ * @since 1.0 2021-04-11
  */
-public class Main {
+public final class Main {
 
+    /**
+     * Constructor that prevents this class from being instantiated.
+     */
+    private Main() {}
+
+    /**
+     * Launches the program.
+     *
+     * @param args List of command line arguments.
+     * @throws IOException If some I/O errors occur.
+     */
     public static void main(final String[] args) throws IOException {
-        long tot = 0;
+        // Initialize the total time spent to solve all the problems
+        long totalTime = 0;
         // Loop over all the policies
         for (int i = 1; i <= 8; i++) {
             final long nano = System.nanoTime();
@@ -32,7 +37,7 @@ public class Main {
             final ArbacInformation information = ArbacReader.readAndParseFile(
                 "policies/policy" + i + ".arbac"
             );
-            
+
             // Apply pruning until no more information can be removed
             boolean toContinue;
             do {
@@ -41,11 +46,12 @@ public class Main {
             } while (toContinue);
 
             // Resolve the role reachability problem
-            System.out.println(
-                "Reachable: " + RoleReachabilityResolver.solveRoleReachabilityProblem(information)
+            final boolean isReachable = RoleReachabilityResolver.solveRoleReachabilityProblem(
+                information
             );
-            tot += (System.nanoTime() - nano);
+            System.out.println("Reachable: " + isReachable);
+            totalTime += (System.nanoTime() - nano);
         }
-        System.out.println("Total time: " + tot);
+        System.out.println("Total time: " + totalTime);
     }
 }
