@@ -8,9 +8,9 @@ import lombok.Getter;
 import java.util.List;
 
 /**
- * Class that models a reachable state in the role reachability problem..
+ * Class that models a reachable state in the role reachability problem.
  *
- * @author DeB
+ * @author Alessio De Biasi
  * @version 1.0 2021-04-11
  * @since 1.0 2021-04-11
  */
