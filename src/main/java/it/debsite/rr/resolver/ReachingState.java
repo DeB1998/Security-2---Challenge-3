@@ -1,9 +1,11 @@
-package it.debsite.rr;
+package it.debsite.rr.resolver;
 
+import it.debsite.rr.info.UserToRolesAssignment;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.ToString;
+
+import java.util.List;
 
 /**
  * Description.
@@ -15,13 +17,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @Getter
 @EqualsAndHashCode
-public class Role {
+public class ReachingState {
     
-    private String name;
-    
-    @Override
-    public String toString() {
-        
-        return this.name;
-    }
+    private final List<UserToRolesAssignment> assignments;
 }
